@@ -1,31 +1,59 @@
-// Initialize dotenv
 require("dotenv").config();
-const { Client, GatewayIntentBits } = require("discord.js");
-const serializeMsg = require("./system/serialize");
-const message = require("./system/message");
+const path = require("path");
+const fs = require("fs");
+const {
+  Client,
+  Collection,
+  GatewayIntentBits,
+  REST,
+  Routes,
+} = require("discord.js");
 
-async function startBot() {
-  const client = new Client({
-    intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.MessageContent,
-    ],
-  });
+const { CLIENT_TOKEN, CLIENT_ID: clientId } = process.env;
 
-  const prefix = "!";
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
-  client.on("ready", () => {
-    console.log("BOT STARTED!");
-    console.log(`Logged in as ${client.user.tag}!`);
-  });
+client.commands = new Collection();
+const foldersPath = path.join(__dirname, "commands", "normal");
+const commandFolders = fs.readdirSync(foldersPath);
 
-  client.on("messageCreate", async (msg) => {
-    const m = await serializeMsg(client, msg);
-    await message(client, m);
-  });
-
-  client.login(process.env.CLIENT_TOKEN);
+for (const folder of commandFolders) {
+  const commandsPath = path.join(foldersPath, folder);
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter((file) => file.endsWith(".js"));
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    if ("execute" in command) {
+      client.commands.set(command.name, command);
+    } else {
+      console.log(
+        `[WARNING] The command at ${filePath} is missing a required "execute" property.`
+      );
+    }
+  }
 }
 
-startBot();
+const eventsPath = path.join(__dirname, "events");
+const eventFiles = fs
+  .readdirSync(eventsPath)
+  .filter((file) => file.endsWith(".js"));
+
+for (const file of eventFiles) {
+  const filePath = path.join(eventsPath, file);
+  const event = require(filePath);
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
+  }
+}
+
+client.login(CLIENT_TOKEN);

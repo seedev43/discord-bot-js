@@ -2,10 +2,10 @@ const path = require("path");
 const fs = require("fs").promises;
 
 module.exports = {
-  name: "public",
+  name: "self",
   tags: "owner",
   isOwner: true,
-  run: async ({ client, msg }) => {
+  execute: async ({ client, msg }) => {
     const filePath = path.join(__dirname, "../../config", "config.js"); // Ganti dengan path sesuai struktur proyek Anda
 
     try {
@@ -15,14 +15,14 @@ module.exports = {
       // Gunakan regex untuk mencari dan mengganti nilai self
       const updatedData = data.replace(
         /const self = .*;/,
-        "const self = false;"
+        "const self = true;"
       ); // Ganti dengan nilai baru yang diinginkan
 
       // Tulis kembali ke file
       await fs.writeFile(filePath, updatedData, "utf8");
 
-      console.log("Update public mode!");
-      return msg.reply("Update public mode!");
+      console.log("Update self mode!");
+      return msg.reply("Update self mode!");
     } catch (err) {
       console.error("Error:", err);
       return msg.reply(err.message);

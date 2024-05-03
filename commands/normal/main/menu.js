@@ -1,11 +1,9 @@
-const { commands } = require("../../system/command");
-
 module.exports = {
   name: "menu",
   aliases: ["menu"],
   tags: "main",
-  run: async ({ client, msg }) => {
-    let tags = Array.from(commands.values());
+  execute: async ({ client, msg }) => {
+    let tags = Array.from(client.commands.values());
     let list = {};
     let text = `Hi ${msg.pushname}\n\n`;
 
@@ -24,7 +22,7 @@ module.exports = {
           .map(
             (val) =>
               `✦ ${val.noPrefix ? val.name : msg.prefix + val.name} ${
-                val.description ? val.description : ""
+                val.description ? `(${val.description})` : ""
               }`
           )
           .join("\n") + "\n";

@@ -3,11 +3,11 @@ const { commandExecute } = require("./command");
 const moment = require("moment-timezone");
 
 async function message(client, msg) {
-  //   console.log(msg);
-  let ok = new Date(msg.date * 1000);
+  if (msg.isBot) return;
   let log = `${chalk.red("------------------------------")}
 
-${chalk.blueBright("ID: " + msg.id)}
+${chalk.blueBright("GUILD ID: " + msg.guildId)}
+${chalk.blueBright("Channel ID: " + msg.channelId)}
 ${chalk.blueBright("USER ID: " + msg.userId)}
 ${chalk.blueBright("PUSHNAME: " + msg.pushname)}
 ${chalk.blueBright("MESSAGE ID: " + msg.msgId)}

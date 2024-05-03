@@ -1,27 +1,6 @@
-const path = require("path");
-const fs = require("fs");
 const helpers = require("../helpers/helpers");
-let commands = new Map();
 
 function commandExecute(client, msg) {
-  const dir = path.join(__dirname, "..", "cmd");
-  const dirs = fs.readdirSync(dir);
-
-  // Clear the existing commands map before reloading
-  commands.clear();
-
-  dirs
-    .filter((a) => a !== "function")
-    .map(async (res) => {
-      let files = fs
-        .readdirSync(`${dir}/${res}`)
-        .filter((file) => file.endsWith(".js"));
-      for (const file of files) {
-        const cmd = require(`../cmd/${res}/${file}`);
-        commands.set(cmd.name, cmd);
-      }
-    });
-
   const cmd = msg.text
     .slice(msg.prefix.length)
     .trim()
@@ -30,10 +9,10 @@ function commandExecute(client, msg) {
     .toLowerCase();
 
   const command =
-    commands.get(cmd) ||
+    client.commands.get(cmd) ||
     (() => {
       let foundCommand = null;
-      commands.forEach((val) => {
+      client.commands.forEach((val) => {
         if (val.aliases && val.aliases.includes(cmd)) {
           foundCommand = val;
         }
@@ -71,11 +50,11 @@ function commandExecute(client, msg) {
       }
 
       command
-        .run({ client, msg })
+        .execute({ client, msg })
         .then((a) => a)
         .catch((err) => console.log(err));
     }
   }
 }
 
-module.exports = { commands, commandExecute };
+module.exports = { commandExecute };
